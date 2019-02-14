@@ -39,7 +39,6 @@
       "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
       "storageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
       "storageApiVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
-      "functionWorkerRuntime": "[parameters('runtime')]"
     },
     "resources": [
       {
@@ -71,7 +70,8 @@
         "kind": "functionapp",
         "dependsOn": [
           "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "[resourceId('Microsoft.Insights/components/', variables('applicationInsightsName'))]"
         ],
         "properties": {
           "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
@@ -107,7 +107,7 @@
               },
               {
                 "name": "FUNCTIONS_WORKER_RUNTIME",
-                "value": "[variables('functionWorkerRuntime')]"
+                "value": "[parameters('runtime')]"
               }
             ]
           }

@@ -6,11 +6,7 @@ az group create -n $resourceGroup -l $location
 # choose a name for our function app
 $functionAppName = "pluralsightfuncsarm"
 
-# to check our template syntax
-az group deployment validate -g $resourceGroup --template-file azuredeploy.json `
-    --parameters appName=$functionAppName
-
-# to actually deploy our function app
+# to deploy our function app
 az group deployment create -g $resourceGroup --template-file azuredeploy.json `
     --parameters appName=$functionAppName
 
