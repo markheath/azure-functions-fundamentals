@@ -17,15 +17,18 @@ namespace pluralsightfuncs
     {
         [FunctionName(nameof(OnPaymentReceived2))]
         public static async Task<IActionResult> OnPaymentReceived2(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-            [OrchestrationClient] DurableOrchestrationClientBase durableClient,
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req,
+            [OrchestrationClient] DurableOrchestrationClient durableClient,
             ILogger log)
         {
             log.LogInformation("Received a payment.");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var order = JsonConvert.DeserializeObject<Order>(requestBody);
-            log.LogInformation($"Order {order.OrderId} received from {order.Email} for product {order.ProductId}");
-            var orchestrationId = await durableClient.StartNewAsync(nameof(NewOrderWorkflow), order);
+            log.LogInformation($"Order {order.OrderId} received from {order.Email}" +
+                               $" for product {order.ProductId}");
+
+            var orchestrationId = await durableClient.StartNewAsync(
+                nameof(NewOrderWorkflow), order);
             var response = durableClient.CreateHttpManagementPayload(orchestrationId);
             return new OkObjectResult(response);
         }
@@ -33,7 +36,7 @@ namespace pluralsightfuncs
 
         [FunctionName(nameof(NewOrderWorkflow))]
         public static async Task NewOrderWorkflow(
-            [OrchestrationTrigger]DurableOrchestrationContextBase ctx,
+            [OrchestrationTrigger]DurableOrchestrationContext ctx,
             ILogger log)
         {
             var order = ctx.GetInput<Order>();
@@ -63,10 +66,7 @@ namespace pluralsightfuncs
             ILogger log)
         {
             var outputBlob = await binder.BindAsync<TextWriter>(
-                new BlobAttribute($"licenses/{order.OrderId}.lic")
-                {
-                    Connection = "AzureWebJobsStorage"
-                });
+                new BlobAttribute($"licenses/{order.OrderId}.lic"));
 
             outputBlob.WriteLine($"OrderId: {order.OrderId}");
             outputBlob.WriteLine($"Email: {order.Email}");
